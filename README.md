@@ -5,7 +5,7 @@
 ### Overview of Purpose and Functionality
 The primary purpose of the script is to support the analysis of fluorescence (and, optionally, XY) data from _de novo_ particles over time. 
 
-#### Functions of this code:
+### Functions of this code:
 1. Loads intensity and positional data from Excel files.
 2. Corrects any stitching artifacts caused by combining multiple tracking segments in ICY.
 3. Aligns and renames intensity data based on user-specified channel designations.
@@ -14,7 +14,7 @@ The primary purpose of the script is to support the analysis of fluorescence (an
 6. Generate and export XY trajectory, fluorescence intensity, and fitted nFRET and CB plots.
 7. Exports a summary Excel workbook containing both raw and calculated/fitted data as well as kinetic info.
 
-#### Input Files and Requirements
+### Input Files and Requirements
 This code can load two Excel files:
 1. The intensity file that includes fluorescence info. The script assumes that sheet indices 0, 6, and 12 are the channels of interest, which is mean intensity. Note that in python, numbering starts at 0 (e.g. the first tab is 0, and the 2nd tab is 1).
 2. (OPTIONAL) The XY data file that contains x/y coordinates for each time point.
@@ -26,14 +26,14 @@ This code is assuming that there is only **1** particle being represented in eac
 
 Users must specify the file paths in the script under the variables *filepath1* and *filepath2*. Output files are saved to a designated directory defined by *filepath_out*.
 
-#### Configuration Parameters
+### Configuration Parameters
 + YFP, FRET, mCH: integers indicating which of the three channels corresponds to YFP, FRET, and mCherry. Numbering starts at 1, **not** 0. Should range from 1-3.
 + YFP_BT and mCH_BT: bleedthrough coefficients for YFP and mCherry.
 + Tempres: temporal resolution of imaging (in seconds between frames).
 + Dim: scaling factor to convert pixel units into microns.
 + fit_x_min and fit_x_max: Optional time bounds (in minutes) restricting the range of data used during sigmoid fitting. These allow users to focus the fit on a meaningful subset of the data. To use the full range, set to *none*.
 
-#### Data Processing and Calculating Additional Metrics
+### Data Processing and Calculating Additional Metrics
 After loading, the data is cleaned and aligned using the *correct_shift()* function. This corrects for issues from stitching together multiple tracks in ICY. The three channels are then merged and renamed according to user input.
 
 From this cleaned dataset, the following derived metrics are computed:
@@ -46,7 +46,7 @@ From this cleaned dataset, the following derived metrics are computed:
           YFP / (YFP + mCH)
   6. x (um), y (um): Positional data in microns. Based on the Dim scaling factor.
 
-#### Curve Fitting and Kinetic Analysis
+### Curve Fitting and Kinetic Analysis
 The script fits a sigmoid function with the formula:
 
           y = L / (1 + exp(-k(x - x0))) + b
@@ -61,7 +61,7 @@ The resulting fit is then used to calculate:
 
 *In the event of poor fit within the set fitting range, the function is designed to return NaN values instead of erroring.*
 
-#### Output Files and Formats
+### Output Files and Formats
 Processed results are saved to the output directory under filenames automatically derived from the input base name. For instance, an input file named 2_3ROI1I.xls will generate:
   1. 2_3ROI1I_Summary.xlsx: An Excel workbook with 2 tabs:
       + All Values: The full dataset with all computed values and the sigmoid fits + residuals.
@@ -73,7 +73,7 @@ Processed results are saved to the output directory under filenames automaticall
 
 All figures are saved in PNG format with 300 DPI resolution.
 
-#### Dependencies and Environment
+### Dependencies and Environment
 The script requires Python 3 and the following packages:
 + pandas
 + numpy
