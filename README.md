@@ -1,4 +1,4 @@
-# Puncta Fluorescence Analysis and Sigmoid Fitting
+# Fluorescence Analysis and Sigmoid Fitting
 
 #### This document describes a Python-based code for the analysis of live cell _de novo_ puncta data analysis. The code processes raw output from ICY in Excel file format, align and clean the data as needed, calculates normalized Förster resonance energy transfer (nFRET) and color balance (CB), applies sigmoid curve fitting to identify kinetic info, and export visual and Excel summaries of results. The script is intended for use with Jupyter Notebook and meant for data with 3 fluorescence channels (e.g. YFP, FRET, and mCherry).
 
