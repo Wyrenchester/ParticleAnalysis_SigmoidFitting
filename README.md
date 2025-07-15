@@ -47,6 +47,7 @@ From this cleaned dataset, the following derived metrics are computed:
 #### Curve Fitting and Kinetic Analysis
 The script fits a sigmoid function with the formula:
 > y = L / (1 + exp(-k(x - x0))) + b
+
 to nFRET and CB, either over the entire time range or over a user-defined window.
 
 The resulting fit is then used to calculate:
