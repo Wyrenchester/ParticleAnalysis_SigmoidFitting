@@ -6,10 +6,10 @@
 # Automatic calculations & graphing
 # Code Last updated on 2025-07-15 by Yinglin Li
 # (This is meant for protease activation events, otherwise the signmoid fitting is going to be wonky)
-# (This code **needs** the XY file to work.)
+# (This version **does not** need the XY file.)
 # 
-# 7/14/25 - wrote code
-# 7/15/25 - redid name outputs for excel + plots to include input file name
+# *7/14/25 - wrote code*
+# *7/15/25 - redid name outputs for excel + plots to include input file name*
 # 7/16/2025 - moidified formatting for .py file type
 # =============================================================================
 
@@ -19,8 +19,6 @@
 # Set filepath
     # Path to INTENSITY file
 filepath1 = r"C:\Users\yli355\Downloads\2_3ROI1I.xls"
-    # Path to XY file
-filepath2 = r"C:\Users\yli355\Downloads\2_3ROI1xy.xls"
     # Path for OUTPUT file
 filepath_out = r"C:\Users\yli355\Downloads"
 
@@ -36,12 +34,10 @@ FRET = 2
 YFP_BT = 0.01
 mCH_BT = 0.05
 
-# Pixel to um conversion (1 pixel = dim um)
-Dim = 0.26820
-
 # Sigmoid fitting time (set to None to use min/max values)
 fit_x_min = None
 fit_x_max = None
+
 
 # %% Import Libraries
 
@@ -61,18 +57,11 @@ from scipy.optimize import curve_fit
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
-# for graphs
-from matplotlib.collections import LineCollection
-from matplotlib import cm
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 # %% Read in files
 
 df1 = pd.read_excel(filepath1, engine='xlrd', sheet_name=0, header=0)
 df2 = pd.read_excel(filepath1, engine='xlrd', sheet_name=6, header=0)
 df3 = pd.read_excel(filepath1, engine='xlrd', sheet_name=12, header=0)
-
-xy = pd.read_excel(filepath2, engine='xlrd', skiprows=2)
 
 # %%% Get name of the file (using the intensity file, or whatever is filepath1)
 base_name = os.path.splitext(os.path.basename(filepath1))[0]
@@ -81,7 +70,6 @@ base_name = os.path.splitext(os.path.basename(filepath1))[0]
 summary_filename = f"{base_name}_Summary.xlsx"
 nFRET_fit_img = f"{base_name}_nFRET_Fit.png"
 CB_fit_img = f"{base_name}_CB_Fit.png"
-trajectory_img = f"{base_name}_trajectory.png"
 intensity_img = f"{base_name}_intensity.png"
 
 # %% Calculate nFRET, Color Balance (CB), and output summary file
@@ -249,11 +237,8 @@ def fit_and_report(df, x_col, y_col, fit_x_min=None, fit_x_max=None):
 
     return results_df, metrics_df
 
-# %% Combining and cleaning input files
 
-# %%% Cleaning XY file as needed
-xy = xy[[col for col in xy.columns if col in ['x', 'y']]]
-xy = xy.dropna(how='all', subset=['x', 'y'])
+# %% Combining and cleaning input files
 
 # %%% Correct for any issues from stitching
 ch1 = correct_shift(df1)
@@ -269,9 +254,6 @@ df = pd.concat([ch1, ch2, ch3],axis=1)
 # Rename columns to YFP, FRET, mCH according to user inputs
 df = rename_channels(df, YFP, FRET, mCH)
 
-# Combine XY data
-df = pd.concat([df,xy],axis=1)
-
 # %% Calculating nFRET, CB, and other metrics
 
 # Calculate Time in minutes and seconds
@@ -283,10 +265,6 @@ df['nFRET'] = (df['FRET'] - (YFP_BT * df['YFP']) - (mCH_BT * df['mCH'])) / df['m
 
 # Calculate Color Balance
 df['CB'] = df['YFP'] / (df['YFP'] + df['mCH'])
-
-# Calculate xy position in um
-df['x (um)'] = df['x'] * Dim
-df['y (um)'] = df['y'] * Dim
 
 # reorder columns for readability reasons
 df = df.iloc[:, [5,6,3,4,9,10,0,2,1,7,8]] 
@@ -302,7 +280,7 @@ results_CB, metrics_CB = fit_and_report(df, 'Time (min)', 'CB', fit_x_min=fit_x_
 # %% Compile and save output in a summary excel file
 
 # add in predicted and residuals for nFRET and CB to df file
-    # Columns to be added or replaced
+    # Columns to be added (or replaced)
 columns_to_drop = [
     'predicted nFRET', 'residual nFRET',
     'predicted CB', 'residual CB'
@@ -340,44 +318,6 @@ with pd.ExcelWriter(filepath) as writer:
     kinetics.to_excel(writer, sheet_name='Kinetics', index=True)
 
 # %% Graphs
-
-# %%% XY plot
-x = df['x (um)'].values
-y = df['y (um)'].values
-
-points = np.array([x, y]).T.reshape(-1, 1, 2)
-segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
-norm = plt.Normalize(0, len(x))
-lc = LineCollection(segments, cmap='coolwarm', norm=norm)
-lc.set_array(np.arange(len(x)))
-lc.set_linewidth(2)
-
-fig, ax = plt.subplots(figsize=(6, 6))
-ax.add_collection(lc)
-ax.set_xlim(x.min(), x.max())
-ax.set_ylim(y.max(), y.min())  # invert Y-axis for top-left origin
-ax.set_xlabel('x (um)')
-ax.set_ylabel('y (um)')
-ax.set_title('XY position')
-ax.set_aspect('equal')
-
-# Create a colorbar
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.1)
-cbar = plt.colorbar(lc, cax=cax)
-
-cbar.set_ticks([])              # Remove numeric tick labels
-cbar.set_label('start → end')
-
-plt.tight_layout()
-
-# Construct filename dynamically
-base_name = os.path.splitext(os.path.basename(filepath1))[0]
-save_path = os.path.join(filepath_out, f"{base_name}_trajectory.png")
-
-plt.savefig(save_path, dpi=300)
-plt.show()
 
 # %%% Intensity plot
 color_YFP = 'green' 
