@@ -40,16 +40,16 @@ From this cleaned dataset, the following derived metrics are computed:
   1. Time (sec and min): Based on the frame index and temporal resolution.
   2. nFRET: A normalized FRET signal calculated by:
 
-          (FRET - YFP_BT * YFP - mCH_BT * mCH) / mCH
+          nFRET = (FRET - YFP_BT * YFP - mCH_BT * mCH) / mCH
   4. Color Balance (CB): The ratio of YFP to total fluorescence, calculated by:
 
-          YFP / (YFP + mCH)
+          CB = YFP / (YFP + mCH)
   6. x (um), y (um): Positional data in microns. Based on the Dim scaling factor.
 
 ### Curve Fitting and Kinetic Analysis
 The script fits a sigmoid function with the formula:
 
-          y = L / (1 + exp(-k(x - x0))) + b
+          f(x) = L / (1 + exp(-k(x - x0))) + b
       
 to nFRET and CB, either over the entire time range or over a user-defined window.
 
