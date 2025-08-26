@@ -346,7 +346,7 @@ cbar.set_label('start → end')
 plt.tight_layout()
 
 # Construct filename dynamically
-base_name = os.path.splitext(os.path.basename(filepath1))[0]
+base_name = os.path.splitext(os.path.basename(intensity_file))[0]
 save_path = os.path.join(filepath_out, f"{base_name}_trajectory.png")
 
 plt.savefig(save_path, dpi=300)
